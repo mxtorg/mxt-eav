@@ -1,6 +1,7 @@
 # Compiled class files
 *.class
-
+modules/
+module
 # Log files
 *.log
 

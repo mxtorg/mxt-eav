@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MXT EAV 管理系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+        .content {
+            display: none;
+        }
+        .content.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MXT EAV 管理系统</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('entities')">实体类型</button>
+            <button class="tab" onclick="showTab('attributes')">属性</button>
+            <button class="tab" onclick="showTab('products')">商品</button>
+            <button class="tab" onclick="showTab('api-test')">API测试</button>
+        </div>
+
+        <div id="entities" class="content active">
+            <h2>实体类型管理</h2>
+            <div id="entity-types-content"></div>
+        </div>
+
+        <div id="attributes" class="content">
+            <h2>属性管理</h2>
+            <div id="attributes-content"></div>
+        </div>
+
+        <div id="products" class="content">
+            <h2>商品管理</h2>
+            <div id="products-content"></div>
+        </div>
+
+        <div id="api-test" class="content">
+            <h2>API测试</h2>
+            <div id="api-test-content">
+                <button class="btn btn-primary" onclick="testApi('GET', '/api/entity-types')">获取实体类型</button>
+                <button class="btn btn-primary" onclick="testApi('GET', '/api/entity-types/1/attributes')">获取属性</button>
+                <button class="btn btn-primary" onclick="testApi('GET', '/api/entity-types/1/entities')">获取实体</button>
+                <pre id="api-result" style="background: #f8f9fa; padding: 10px; margin-top: 10px; border-radius: 4px; max-height: 400px; overflow: auto;"></pre>
+            </div>
+        </div>
+
+        <div id="status-message"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        // 显示标签页
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'entities') loadEntityTypes();
+            if (tabId === 'attributes') loadAttributes();
+            if (tabId === 'products') loadProducts();
+        }
+
+        // 显示状态消息
+        function showStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            setTimeout(() => statusDiv.textContent = '', 3000);
+        }
+
+        // API请求函数
+        async function apiRequest(method, endpoint, data = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (data) options.body = JSON.stringify(data);
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                showStatus(`API错误: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // 测试API
+        async function testApi(method, endpoint) {
+            try {
+                const result = await apiRequest(method, endpoint);
+                document.getElementById('api-result').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('api-result').textContent = `错误: ${error.message}`;
+            }
+        }
+
+        // 加载实体类型
+        async function loadEntityTypes() {
+            try {
+                const types = await apiRequest('GET', '/entity-types');
+                const html = `
+                    <table>
+                        <tr><th>ID</th><th>编码</th><th>名称</th><th>描述</th></tr>
+                        ${types.map(t => `<tr><td>${t.id}</td><td>${t.code}</td><td>${t.name}</td><td>${t.description || '-'}</td></tr>`).join('')}
+                    </table>
+                `;
+                document.getElementById('entity-types-content').innerHTML = html;
+            } catch (error) {
+                document.getElementById('entity-types-content').innerHTML = '<p>加载失败，确保后端服务已启动</p>';
+            }
+        }
+
+        // 加载属性
+        async function loadAttributes() {
+            try {
+                const types = await apiRequest('GET', '/entity-types');
+                if (types.length === 0) {
+                    document.getElementById('attributes-content').innerHTML = '<p>请先创建实体类型</p>';
+                    return;
+                }
+                const attributes = await apiRequest('GET', `/entity-types/${types[0].id}/attributes`);
+                const html = `
+                    <h3>实体类型: ${types[0].name}</h3>
+                    <table>
+                        <tr><th>ID</th><th>编码</th><th>名称</th><th>数据类型</th><th>必填</th><th>排序</th></tr>
+                        ${attributes.map(a => `<tr><td>${a.id}</td><td>${a.code}</td><td>${a.name}</td><td>${a.dataType}</td><td>${a.required ? '是' : '否'}</td><td>${a.sortOrder}</td></tr>`).join('')}
+                    </table>
+                `;
+                document.getElementById('attributes-content').innerHTML = html;
+            } catch (error) {
+                document.getElementById('attributes-content').innerHTML = '<p>加载失败</p>';
+            }
+        }
+
+        // 加载商品
+        async function loadProducts() {
+            try {
+                const types = await apiRequest('GET', '/entity-types');
+                if (types.length === 0) {
+                    document.getElementById('products-content').innerHTML = '<p>请先创建实体类型和属性</p>';
+                    return;
+                }
+                const products = await apiRequest('GET', `/entity-types/${types[0].id}/entities`);
+                let tableHtml = '';
+                if (products.length > 0) {
+                    const attrs = Object.keys(products[0].attributes || {});
+                    tableHtml = `
+                        <table>
+                            <tr>
+                                <th>ID</th><th>编码</th><th>名称</th>
+                                ${attrs.map(a => `<th>${a}</th>`).join('')}
+                            </tr>
+                            ${products.map(p => `
+                                <tr>
+                                    <td>${p.id}</td><td>${p.code}</td><td>${p.name}</td>
+                                    ${attrs.map(a => `<td>${p.attributes[a] !== undefined ? p.attributes[a] : '-'}</td>`).join('')}
+                                </tr>
+                            `).join('')}
+                        </table>
+                    `;
+                }
+                document.getElementById('products-content').innerHTML = tableHtml || '<p>暂无商品数据</p>';
+            } catch (error) {
+                document.getElementById('products-content').innerHTML = '<p>加载失败</p>';
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEntityTypes();
+        });
+    </script>
+</body>
+</html>
