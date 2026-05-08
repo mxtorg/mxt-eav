@@ -20,10 +20,33 @@
     </modules>
 
     <properties>
-        <java.version>17</java.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <spring-boot.version>3.5.7</spring-boot.version>
+        <springdoc.version>2.8.14</springdoc.version>
+        <mybatis-flex.version>1.11.6</mybatis-flex.version>
+        <flyway.version>11.15.0</flyway.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
+        <!-- sonar -->
+        <sonar.projectKey>hina-cloud_hina-cloud-base_AYduUIOh5-fEc7J-qV6b</sonar.projectKey>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+        <jjwt.version>0.12.5</jjwt.version>
+
+        <maven.resource.version>3.1.0</maven.resource.version>
+        <maven.clean.version>3.1.0</maven.clean.version>
+
+        <node.version>v22.20.0</node.version>
+        <pnpm.version>v10.24.0</pnpm.version>
+
+
+        <graalvm.version>25.0.3</graalvm.version>
+        <!-- 如果需要从脚本文件中加载，可以指定脚本文件存放的路径 -->
+        <scripts.dir>src/main/resources/scripts</scripts.dir>
+        <module.web>eav-web</module.web>
+
     </properties>
 
     <dependencies>
