@@ -40,7 +40,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.hina.usm.UsmApplication</mainClass>
+                    <mainClass>com.mxt.eav.MxtEavApplication</mainClass>
                     <includeSystemScope>true</includeSystemScope>
                     <layers>
                         <enabled>true</enabled>
