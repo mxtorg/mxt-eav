@@ -10,13 +10,13 @@ import org.springframework.cache.annotation.EnableCaching;
  */
 @SpringBootApplication
 @EnableCaching
-public class MxtEavApplication {
+public class EavApplication {
 
     /**
      * 应用入口方法
      * @param args 命令行参数
      */
     public static void main(String[] args) {
-        SpringApplication.run(MxtEavApplication.class, args);
+        SpringApplication.run(EavApplication.class, args);
     }
 }
